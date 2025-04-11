@@ -1,0 +1,666 @@
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+#ifdef VICTUS_LOCAL
+    #include <windows.h>
+#endif
+//mrChest's code
+
+#define f first
+#define s second
+#define pb push_back
+#define pf push_front
+#define in insert
+#define oo 1e18
+#define shTofit shrink_to_fit
+#define elif else if
+#define it iterator
+#define gcd __gcd
+#define nl '\n'
+
+#pragma GCC optimize("O3,unroll-loops")
+#pragma GCC target("avx2,bmi,bmi2,popcnt,lzcnt")
+#pragma GCC poison
+
+typedef long double ld;
+typedef __int128 int128;
+typedef  int64_t  int64;
+typedef uint64_t uint64;
+typedef uint32_t uint;
+typedef  int16_t  int16;
+typedef uint16_t uint16;
+typedef  int8_t   int8;
+typedef uint8_t  uint8;
+
+using namespace std;
+using namespace __gnu_pbds;
+mt19937_64 rnd(chrono::steady_clock::now().time_since_epoch().count());
+
+template <class T> using orderedSet = tree <T, null_type, less <T>, rb_tree_tag, tree_order_statistics_node_update>;
+template <class T> using priQue = priority_queue <T, vector <T>, greater <T>>;
+
+template <class A, class B>
+istream& operator>> (istream &in, pair <A, B> &p) {
+    in >> p.f >> p.s;
+    return in;
+}
+template <class T, size_t N>
+istream& operator>> (istream &in, T (&arr)[N]) {
+    for (int i = 0; i < N; ++i)
+        in >> arr[i];
+    return in;
+}
+template <class T>
+istream& operator>> (istream &in, vector <T> &v) {
+    for (auto &u : v)
+        in >> u;
+    return in;
+}
+template <class T, size_t n>
+istream& operator>> (istream &in, array <T, n> &arr) {
+    for (auto &u : arr)
+        in >> u;
+    return in;
+}
+istream& operator>> (istream &in, int128 &x) {
+    string s;
+    in >> s;
+    bool isNegative = 0;
+    if (s[0] == '-') {
+        isNegative = 1;
+        s.erase(s.begin());
+    }
+    assert(s.size() <= 39);
+    if (s.size() <= 19) { //first 19 digits
+        x = stoull(s);
+        x *= (isNegative * -2 + 1);
+        return in;
+    }
+    x = stoull(s.substr(0, 19));
+    s.erase(0, 19);
+    if (s.size() <= 19) { //38 digits
+        x = x * pow(10ull, s.size()) + stoull(s);
+        x *= (isNegative * -2 + 1);
+        return in;
+    }
+    //39'th digit
+    x = (x * pow(10ull, 19) + stoull(s.substr(0, 19))) * 10 + s.back();
+    x *= (isNegative * -2 + 1);
+    return in;
+}
+
+template <class A, class B>
+ostream& operator<< (ostream &out, const pair <A, B> &p){
+    out << '(' << p.f << ", " << p.s << ')';
+    return out;
+}
+//template <class T, size_t N>
+//typename enable_if<!is_same<T, char>::value, ostream&>::type
+//operator<< (ostream &out, T (&arr)[N]) {
+//    for (int i = 0; i < N; ++i)
+//        out << arr[i] << ' ';
+//    return out;
+//}
+template <class T>
+ostream& operator<< (ostream &out, vector <T> &v) {
+    out << '[';
+    auto it = v.begin();
+    while (it != v.end()) {
+        if (it != v.begin())
+            out << ", ";
+        out << *(it++);
+    }
+    out << ']';
+    return out;
+}
+template <class T, size_t n>
+ostream& operator<< (ostream &out, array <T, n> &arr) {
+    out << '[';
+    auto it = arr.begin();
+    while (it != arr.end()) {
+        if (it != arr.begin())
+            out << ", ";
+        out << *(it++);
+    }
+    out << ']';
+    return out;
+}
+template <class T>
+ostream& operator<< (ostream &out, deque <T> &dq) {
+    out << '[';
+    auto it = dq.begin();
+    while (it != dq.end()) {
+        if (it != dq.begin())
+            out << ", ";
+        out << *(it++);
+    }
+    out << ']';
+    return out;
+}
+template <class T>
+ostream& operator<< (ostream &out, set <T> &st) {
+    out << '{';
+    auto it = st.begin();
+    while (it != st.end()) {
+        if (it != st.begin())
+            out << ", ";
+        out << *(it++);
+    }
+    out << '}';
+    return out;
+}
+template <class T>
+ostream& operator<< (ostream &out, multiset <T> &st) {
+    out << '{';
+    auto it = st.begin();
+    while (it != st.end()) {
+        if (it != st.begin())
+            out << ", ";
+        out << *(it++);
+    }
+    out << '}';
+    return out;
+}
+template <class T>
+ostream& operator<< (ostream &out, orderedSet <T> &st) {
+    out << '{';
+    auto it = st.begin();
+    while (it != st.end()) {
+        if (it != st.begin())
+            out << ", ";
+        out << (*(it++));
+    }
+    out << '}';
+    return out;
+}
+template <class A, class B>
+ostream& operator<< (ostream &out, map <A, B> &mp) {
+    out << '{';
+    auto it = mp.begin();
+    while (it != mp.end()) {
+        if (it != mp.begin())
+            out << ", ";
+        out << '(' << it -> f << ": " << it -> s << ')';
+        it++;
+    }
+    out << '}';
+    return out;
+}
+ostream& operator<< (ostream &out, int128 x) {
+    if (x < 0) {
+        out << '-';
+        x *= -1;
+    }
+    const uint64 p10 = 1e19;
+    if (x < p10) {
+        out << uint64(x);
+        return out;
+    }
+    string s = to_string(uint64(x % p10));
+    reverse(s.begin(), s.end());
+    while (s.size() < 19)
+        s += '0';
+    reverse(s.begin(), s.end());
+    out << uint64(x / p10) << s;
+    return out;
+}
+
+template <class A, class B>
+pair <A, B>& operator++ (pair <A, B> &p) {
+    ++p.f;
+    ++p.s;
+    return p;
+}
+template <class A, class B>
+pair <A, B>& operator++ (pair <A, B> &p, int _) {
+    return {p.f++, p.s++};
+}
+template <class A, class B>
+pair <A, B>& operator-- (pair <A, B> &p) {
+    --p.f;
+    --p.s;
+    return p;
+}
+template <class A, class B>
+pair <A, B>& operator-- (pair <A, B> &p, int _) {
+    return {p.f--, p.s--};
+}
+
+template <class T>
+vector <T>& operator+ (vector <T> v, vector <T> &w) {
+    for (T u : w)
+        v.pb(u);
+    return v;
+}
+
+template <class T>
+void sort(vector <T> &v) {
+    sort(v.begin(), v.end());
+}
+void sort(string &s) {
+    sort(s.begin(), s.end());
+}
+template <class T>
+void reverse(vector <T> &v) {
+    reverse(v.begin(), v.end());
+}
+void reverse(string &s) {
+    reverse(s.begin(), s.end());
+}
+template <class T>
+void unsort(vector <T> &v) {
+    sort(v.begin(), v.end());
+    reverse(v.begin(), v.end());
+}
+void unsort(string &s) {
+    sort(s.begin(), s.end());
+    reverse(s.begin(), s.end());
+}
+template <class T>
+void unsort(T b, T e) {
+    sort(b, e);
+    reverse(b, e);
+}
+//TODO: fix unique
+//template <class ITER, class T>
+//ITER unique(vector <T> &v) {
+//    return unique(v.begin(), v.end());
+//}
+string::iterator unique(string &s) {
+    return unique(s.begin(), s.end());
+}
+
+template <class T, class intT>
+void _in(T *a, intT n) {
+    for (intT i = 0; i < n; ++i)
+        cin >> *(a + i);
+}
+template <class T, class intT>
+void _out(T *a, intT n) {
+    for (intT i = 0; i < n; ++i)
+        cout << *(a + i) << ' ';
+    cout << nl;
+}
+
+int64 max(int a, int64 b) {
+    return (a > b ? a : b);
+}
+int64 max(int64 a, int b) {
+    return (a > b ? a : b);
+}
+int64 min(int a, int64 b) {
+    return (a < b ? a : b);
+}
+int64 min(int64 a, int b) {
+    return (a < b ? a : b);
+}
+
+template <class T, size_t N>
+vector <T> toVec(T (&arr)[N]) {
+    vector <T> ans(N);
+    for (size_t i = 0; i < N; ++i)
+        ans[i] = arr[i];
+    return ans;
+}
+template <class A, class B>
+vector <A> toVec(A x, B base) {
+    vector <A> ans;
+    while (x > 0) {
+        ans.pb(x % base);
+        x /= base;
+    }
+    reverse(ans);
+    return ans;
+}
+
+template <class T>
+T max(vector <T> &v) {
+    static_assert(v.size() > 0);
+    T ans = v[0];
+    for (uint i = 1; i < v.size(); ++i)
+        ans = max(ans, v[i]);
+    return ans;
+}
+template <class T, class fun>
+T max(vector <T> &v, fun comp) {
+    static_assert(v.size() > 0);
+    T ans = v[0];
+    for (uint i = 1; i < v.size(); ++i)
+        ans = max(ans, v[i], comp);
+    return ans;
+}
+template <class T>
+T min(vector <T> &v) {
+    static_assert(v.size() > 0);
+    T ans = v[0];
+    for (uint i = 1; i < v.size(); ++i)
+        ans = min(ans, v[i]);
+    return ans;
+}
+template <class T, class fun>
+T min(vector <T> &v, fun comp) {
+    static_assert(v.size() > 0);
+    T ans = v[0];
+    for (uint i = 1; i < v.size(); ++i)
+        ans = min(ans, v[i], comp);
+    return ans;
+}
+template <class T>
+T _sum(vector <T> &v) {
+    if (v.size() == 0)
+        return 0;
+    T ans = v[0];
+    for (uint i = 1; i < v.size(); ++i)
+        ans += v[i];
+    return ans;
+}
+template <class T, class fun>
+vector <T> _map(vector <T> &v, fun f) {
+    vector <T> ans(v.size());
+    for (uint i = 0; i < v.size(); ++i)
+        ans[i] = f(v[i]);
+    return ans;
+}
+template <class T, class fun>
+vector <T> filter(vector <T> &v, fun f) {
+    vector <T> ans;
+    for (T u : v)
+        if (f(u))
+            ans.pb(u);
+    return ans;
+}
+
+template <class T>
+T _sum(set <T> &st) {
+    if (st.size() == 0)
+        return 0;
+    T ans = *st.begin();
+    for (auto it = st.begin(); it != st.end(); ++it)
+        if (it != st.begin())
+            ans += *it;
+    return ans;
+}
+template <class T, class fun>
+set <T> _map(set <T> &st, fun f) {
+    set <T> ans;
+    for (auto u : st)
+        ans.in(f(u));
+    return ans;
+}
+template <class T, class fun>
+set <T> filter(set <T> &st, fun f) {
+    set <T> ans;
+    for (T u : st)
+        if (f(u))
+            ans.in(u);
+    return ans;
+}
+
+template <class T, class intT>
+T max(T *a, intT n) {
+    assert(n > 0);
+    T ans = a[0];
+    for (intT i = 1; i < n; ++i)
+        ans = max(ans, a[i]);
+    return ans;
+}
+template <class T, class intT, class fun>
+T max(T *a, intT n, fun comp) {
+    assert(n > 0);
+    T ans = a[0];
+    for (intT i = 1; i < n; ++i)
+        ans = max(ans, a[i], comp);
+    return ans;
+}
+
+template <class T, class intT>
+T min(T *a, intT n) {
+    assert(n > 0);
+    T ans = a[0];
+    for (intT i = 1; i < n; ++i)
+        ans = min(ans, a[i]);
+    return ans;
+}
+template <class T, class intT, class fun>
+T min(T *a, intT n, fun comp) {
+    assert(n > 0);
+    T ans = a[0];
+    for (intT i = 1; i < n; ++i)
+        ans = min(ans, a[i], comp);
+    return ans;
+}
+template <class T, class intT>
+T _sum(T *a, intT n) {
+    if (n == 0)
+        return 0;
+    T ans = a[0];
+    for (intT i = 1; i < n; ++i)
+        ans += a[i];
+    return ans;
+}
+template <class T, class intT, class fun>
+T* _map(T *a, intT n, fun f) {
+    T *ans = new T[n];
+    for (intT i = 0; i < n; ++i)
+        ans[i] = f(a[i]);
+    return ans;
+}
+template <class T, class intT>
+bool isEqual(T *a, T *b, intT n) {
+    for (intT i = 0; i < n; ++i)
+        if (a[i] != b[i])
+            return 0;
+    return 1;
+}
+
+char max(string &s) {
+    char ans = '\0';
+    for (char c : s)
+        ans = max(ans, c);
+    return ans;
+}
+template <class fun>
+char max(string &s, fun comp) {
+    assert(s.size() > 0);
+    char ans = s[0];
+    for (uint i = 1; i < s.size(); ++i)
+        ans = max(ans, s[i], comp);
+    return ans;
+}
+char min(string &s) {
+    char ans = '\0';
+    for (char c : s)
+        ans = min(ans, c);
+    return ans;
+}
+template <class fun>
+char min(string &s, fun comp) {
+    assert(s.size() > 0);
+    char ans = s[0];
+    for (uint i = 1; i < s.size(); ++i)
+        ans = min(ans, s[i], comp);
+    return ans;
+}
+template <class fun>
+string _map(string &s, fun f) {
+    string ans(s.size());
+    for (uint i = 0; i < s.size(); ++i)
+        ans[i] = f(s[i]);
+    return ans;
+}
+template <class fun>
+string filter(string &s, fun f) {
+    string ans;
+    for (char u : s)
+        if (f(u))
+            ans += u;
+    return ans;
+}
+
+template <class A,class B>
+void swap(pair <A, B> &p) {
+    swap(p.f, p.s);
+}
+
+#define int int64
+
+const int mod0  = 998244353;
+const int mod1 = 1e9 + 7;
+int mod = mod0;
+
+const pair <int, int> h[4] = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
+const pair <int, int> h2[8] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
+
+template <class T, class Comp = less <T>>
+vector <T> merge(vector <T> &a, vector <T> &b, Comp comp = Comp()) {
+    int i = 0, j = 0;
+    vector <T> ans;
+    while (i < a.size() || j < b.size()) {
+        if (j == b.size()) {
+            ans.pb(a[i++]);
+            continue;
+        }
+        if (i == a.size()) {
+            ans.pb(b[j++]);
+            continue;
+        }
+        if (comp(a[i], b[j]))
+            ans.pb(a[i++]);
+        else
+            ans.pb(b[j++]);
+    }
+    return ans;
+}
+
+int64 fact(int64 x) {
+    int64 ans = 1;
+    for (int64 i = 2; i <= x; i++)
+        ans *= i;
+    return ans;
+}
+
+int64 fact(int64 x, int64 mod) {
+    if (x >= mod)
+        return 0;
+    int64 ans = 1;
+    for (int64 i = 2; i <= x && ans > 0; i++)
+        ans = ans * i % mod;
+    return ans;
+}
+
+int64 O(int64 x, int64 mod = mod) {
+    return (x == 1 ? 1 : mod - mod / x * O(mod % x, mod) % mod);
+}
+
+int64 power(int64 x, int64 n, int64 mod = mod) {
+    int64 ans = 1, y = x;
+    while (n > 0) {
+        if (n & 1)
+            ans = ans * y % mod;
+        y = y * y % mod;
+        n >>= 1;
+    }
+    return ans;
+}
+
+int64 sum(int64 n) {
+    return n * (n + 1) / 2;
+}
+
+//int64 C(int n, int k, int64 mod = mod) {
+//    return f[n] * o[k] % mod * o[n - k] % mod;
+//}
+//
+//int get(int x) {
+//    return (par[x] == x ? x : par[x] = get(par[x]));
+//}
+//
+//void add(int x, int y) {
+//    x = get(x);
+//    y = get(y);
+//    if (x == y)
+//        return;
+//    if (sz[x] < sz[y])
+//        swap(x, y);
+//    par[y] = x;
+//    d[x] = max(d[x], d[y] + 1);
+//}
+
+//struct tre {
+//    tre *L = NULL,
+//        *R = NULL;
+//    int l, md, r, mx;
+//    tre (int l, int r, int *a): l(l), md((l + r) / 2), r(r) {
+//        if (l == r) {
+//
+//            return;
+//        }
+//        L = new tre(l, md, a);
+//        R = new tre(md + 1, r, a);
+//    }
+//    ~tre() {
+//        if (L != NULL)
+//            delete L;
+//        if (R != NULL)
+//            delete R;
+//    }
+//    void push() {
+//    }
+//    void upd(int _l, int _r, int x) {
+//        if (_r < l || r < _l)
+//            return;
+//        if (_l <= l && r <= _r){
+//
+//            return;
+//        }
+//        push();
+//        L -> upd(_l, _r, x);
+//        R -> upd(_l, _r, x);
+//
+//    }
+//    int get(int _l, int _r) {
+//        if (_l <= l && r <= _r)
+//            return ;
+//        return ;
+//    }
+//};
+
+const int N = 5e5 + 9;
+
+void solve() {
+    cout << "puzzling";
+}
+
+main() {
+    #ifndef VICTUS_LOCAL
+        cin.tie(0); ios::sync_with_stdio(0); cout.tie(0);
+    #endif
+    mod = mod0;
+    int t = 1;
+//    cin >> t;
+    while (t--) {
+        solve();
+        cout << nl;
+    }
+}
+/*
+999999937
+999999929
+999999893
+999999883
+999999797
+999999761
+999999757
+999999751
+999999739
+999999733
+1000037
+1000033
+300109
+300089
+300073
+300043
+300023
+300007
+200009
+*/
